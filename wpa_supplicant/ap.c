@@ -1064,6 +1064,37 @@ int ap_ctrl_iface_wpa_get_status(struct wpa_supplicant *wpa_s, char *buf,
 	return pos - buf;
 }
 
+
+#ifdef CONFIG_SAE
+int ap_ctrl_iface_wpa_get_sae_status(struct wpa_supplicant *wpa_s, char *buf,
+				     size_t buflen, int verbose)
+{
+	char *pos = buf, *end = buf + buflen;
+	int ret;
+	struct hostapd_data *hapd;
+	struct sta_info *sta;
+
+	if (wpa_s->ifmsh == NULL)
+		return 0;
+
+	hapd = wpa_s->ifmsh->bss[0];
+	sta = hapd->sta_list;
+
+	while (sta) {
+		if (sta->sae->state == SAE_ACCEPTED) {
+			ret = os_snprintf(pos, end - pos, "sae_group=%d\n",
+					  sta->sae->group);
+			if (ret < 0 || ret >= end - pos)
+				return pos - buf;
+			pos += ret;
+			break;
+		}
+		sta = sta->next;
+	}
+	return pos - buf;
+}
+#endif /* CONFIG_SAE */
+
 #endif /* CONFIG_CTRL_IFACE */
 
 
