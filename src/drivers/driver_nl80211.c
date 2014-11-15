@@ -6504,12 +6504,14 @@ static enum nl80211_iftype wpa_driver_nl80211_if_type(
 		return NL80211_IFTYPE_P2P_GO;
 	case WPA_IF_P2P_DEVICE:
 		return NL80211_IFTYPE_P2P_DEVICE;
+	case WPA_IF_MESH:
+		return NL80211_IFTYPE_MESH_POINT;
 	}
 	return -1;
 }
 
 
-#ifdef CONFIG_P2P
+#if defined(CONFIG_P2P) || defined(CONFIG_MESH)
 
 static int nl80211_addr_in_use(struct nl80211_global *global, const u8 *addr)
 {
@@ -6523,8 +6525,7 @@ static int nl80211_addr_in_use(struct nl80211_global *global, const u8 *addr)
 }
 
 
-static int nl80211_p2p_interface_addr(struct wpa_driver_nl80211_data *drv,
-				      u8 *new_addr)
+static int nl80211_vif_addr(struct wpa_driver_nl80211_data *drv, u8 *new_addr)
 {
 	unsigned int idx;
 
@@ -6541,13 +6542,13 @@ static int nl80211_p2p_interface_addr(struct wpa_driver_nl80211_data *drv,
 	if (idx == 64)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Assigned new P2P Interface Address "
+	wpa_printf(MSG_DEBUG, "nl80211: Assigned new virtual Interface Address "
 		   MACSTR, MAC2STR(new_addr));
 
 	return 0;
 }
 
-#endif /* CONFIG_P2P */
+#endif /* CONFIG_P2P || CONFIG_MESH */
 
 
 struct wdev_info {
@@ -6634,10 +6635,10 @@ static int wpa_driver_nl80211_if_add(void *priv, enum wpa_driver_if_type type,
 		}
 	}
 
-#ifdef CONFIG_P2P
+#if defined(CONFIG_P2P) || defined(CONFIG_MESH)
 	if (!addr &&
 	    (type == WPA_IF_P2P_CLIENT || type == WPA_IF_P2P_GROUP ||
-	     type == WPA_IF_P2P_GO)) {
+	     type == WPA_IF_P2P_GO || type == WPA_IF_MESH)) {
 		/* Enforce unique P2P Interface Address */
 		u8 new_addr[ETH_ALEN];
 
@@ -6649,8 +6650,9 @@ static int wpa_driver_nl80211_if_add(void *priv, enum wpa_driver_if_type type,
 		}
 		if (nl80211_addr_in_use(drv->global, new_addr)) {
 			wpa_printf(MSG_DEBUG, "nl80211: Allocate new address "
-				   "for P2P group interface");
-			if (nl80211_p2p_interface_addr(drv, new_addr) < 0) {
+				   "for %s interface", type == WPA_IF_MESH ?
+				   "mesh" : "P2P group");
+			if (nl80211_vif_addr(drv, new_addr) < 0) {
 				if (added)
 					nl80211_remove_iface(drv, ifidx);
 				return -1;
@@ -6664,7 +6666,7 @@ static int wpa_driver_nl80211_if_add(void *priv, enum wpa_driver_if_type type,
 		}
 		os_memcpy(if_addr, new_addr, ETH_ALEN);
 	}
-#endif /* CONFIG_P2P */
+#endif /* CONFIG_P2P || CONFIG_MESH */
 
 	if (type == WPA_IF_AP_BSS) {
 		struct i802_bss *new_bss = os_zalloc(sizeof(*new_bss));
