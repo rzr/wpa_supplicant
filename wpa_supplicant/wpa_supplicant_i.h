@@ -77,6 +77,17 @@ struct wpa_interface {
 	const char *conf_p2p_dev;
 #endif /* CONFIG_P2P */
 
+#ifdef CONFIG_MESH
+	/**
+	 * conf_mesh - Additional configuration file used to hold the mesh
+	 * network configuration parameters.
+	 *
+	 * This can also be %NULL. In such a case, virtual interface for mesh
+	 * will not be created.
+	 */
+	const char *conf_mesh;
+#endif /* CONFIG_MESH */
+
 	/**
 	 * ctrl_interface - Control interface parameter
 	 *

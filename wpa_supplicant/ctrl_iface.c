@@ -2431,7 +2431,7 @@ static int wpa_supplicant_ctrl_iface_mesh_interface_add(
 		os_strlcpy(ifname, pos, sizeof(ifname));
 	}
 
-	if (wpas_mesh_add_interface(wpa_s, ifname, sizeof(ifname)) < 0)
+	if (wpas_mesh_add_interface(wpa_s, ifname, sizeof(ifname), NULL) < 0)
 		return -1;
 
 	os_strlcpy(reply, ifname, max_len);

@@ -4005,6 +4005,9 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	struct wpa_supplicant *wpa_s;
 	struct wpa_interface t_iface;
 	struct wpa_ssid *ssid;
+#ifdef CONFIG_MESH
+	char ifname[IFNAMSIZ + 1];
+#endif /* CONFIG_MESH */
 
 	if (global == NULL || iface == NULL)
 		return NULL;
@@ -4063,6 +4066,14 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 		/* Try to continue without. P2P will be disabled. */
 	}
 #endif /* CONFIG_P2P */
+#ifdef CONFIG_MESH
+	if (iface->conf_mesh != NULL &&
+	    (wpa_s->drv_flags & WPA_DRIVER_FLAGS_MESH)) {
+		ifname[0] = '\0';
+		wpas_mesh_add_interface(wpa_s, ifname, sizeof(ifname),
+					iface->conf_mesh);
+	}
+#endif /* CONFIG_MESH */
 
 	return wpa_s;
 }

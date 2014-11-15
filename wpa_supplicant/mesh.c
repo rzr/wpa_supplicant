@@ -491,7 +491,7 @@ static void wpas_mesh_get_ifname(struct wpa_supplicant *wpa_s, char *ifname,
 
 
 int wpas_mesh_add_interface(struct wpa_supplicant *wpa_s, char *ifname,
-			    size_t len)
+			    size_t len, const char *confname)
 {
 	struct wpa_interface iface;
 	struct wpa_supplicant *mesh_wpa_s;
@@ -503,7 +503,7 @@ int wpas_mesh_add_interface(struct wpa_supplicant *wpa_s, char *ifname,
 	if (wpa_drv_if_add(wpa_s, WPA_IF_MESH, ifname, NULL, NULL, NULL, addr,
 			   NULL) < 0) {
 		wpa_printf(MSG_ERROR, "mesh: Failed to create new mesh "
-			   "interface");
+			   "interface %s", ifname);
 		return -1;
 	}
 	wpa_printf(MSG_INFO, "mesh: Created virtual interface %s addr "
@@ -513,7 +513,9 @@ int wpas_mesh_add_interface(struct wpa_supplicant *wpa_s, char *ifname,
 	iface.ifname = ifname;
 	iface.driver = wpa_s->driver->name;
 	iface.driver_param = wpa_s->conf->driver_param;
-	iface.ctrl_interface = wpa_s->conf->ctrl_interface;
+	iface.confname = confname;
+	iface.ctrl_interface =
+		confname == NULL ? wpa_s->conf->ctrl_interface : NULL;
 
 	mesh_wpa_s = wpa_supplicant_add_iface(wpa_s->global, &iface);
 	if (!mesh_wpa_s) {

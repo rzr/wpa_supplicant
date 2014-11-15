@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
 	for (;;) {
 		c = getopt(argc, argv,
-			   "b:Bc:C:D:de:f:g:G:hi:I:KLm:No:O:p:P:qsTtuvW");
+			   "b:Bc:C:D:de:f:g:G:hi:I:KLmn:No:O:p:P:qsTtuvW");
 		if (c < 0)
 			break;
 		switch (c) {
@@ -240,6 +240,11 @@ int main(int argc, char *argv[])
 			iface->conf_p2p_dev = optarg;
 			break;
 #endif /* CONFIG_P2P */
+#ifdef CONFIG_MESH
+		case 'n':
+			iface->conf_mesh = optarg;
+			break;
+#endif /* CONFIG_MESH */
 		case 'o':
 			params.override_driver = optarg;
 			break;
